@@ -1,0 +1,23 @@
+Importaciones:
+npm install (nombre), en cada carpeta, unos import son de api y otras de mobile.
+
+La mas importante: expo
+
+En API:
+
+express
+cors
+mysql
+body-parser
+
+En mobile: 
+formik
+yup
+axios
+react-native-paper
+
+En todo el proyecto: 
+
+react-native
+
+Y las que pida el coso, falta ver.
