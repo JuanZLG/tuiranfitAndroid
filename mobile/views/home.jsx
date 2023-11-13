@@ -1,46 +1,125 @@
+// import React from 'react';
+// import { View, Text, Image, ScrollView } from 'react-native';
+// import { StyleSheet } from 'react-native';
+// import { TextInput, Button, Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+// import { Formik } from 'formik';
+// import axios from 'axios';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Appbar, Drawer } from 'react-native-paper';
+// const LoginScreen = ({ navigation }) => {
+//   const theme = {
+//     ...DefaultTheme,
+//     colors: {
+//       ...DefaultTheme.colors,
+//       primary: 'red',
+//       background: 'transparent',
+//     },
+//   };
 
-export default function Inicio () {
-  // const navigation = useNavigation();
+//   const handleLogin = async (values) => {
+//     try {
+//       const response = await axios.post('http://localhost:5000/login', values);
+//       const token = response.data.token;
 
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+//       await AsyncStorage.setItem('token', token);
 
-  const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-  };
+//       console.log('Token guardado en AsyncStorage:', token);
 
-  return (
-    <View style={styles.container}>
-      {/* Barra de navegación */}
-      <Appbar.Header>
-        <Appbar.Action icon="menu" />
-        <Appbar.Content title="Tuiranfit" />
-      </Appbar.Header>
+//       navigation.navigate('Home');
 
-      {/* Contenido de la pantalla */}
-      <View style={styles.content}>
-        <Text>Bienvenido a Tuiranfit</Text>
-      </View>
+//       console.log('Inicio de sesión exitoso');
+//     } catch (error) {
+//       console.error('Error al iniciar sesión:', error.message);
+//     }
+//   };
 
-      {/* Drawer lateral */}
-      <Drawer visible={isDrawerOpen} onDismiss={toggleDrawer}>
-      <Drawer.Item label="Inicio" />
-      </Drawer>
-    </View>
-  );
-};
+//   return (
+//     <PaperProvider theme={theme}>
+//       <ScrollView contentContainerStyle={styles.allContainer}>
+//         <Image
+//           source={require('../assets/img/bwh.webp')}
+//           style={styles.backgroundImage}
+//         />
+//         <View style={styles.formContainer}>
+//           <Image
+//             source={require('../assets/img/GIcon.png')}
+//             style={styles.image}
+//             resizeMode="contain"
+//           />
+//           <Formik
+//             initialValues={{ correo: '', contra: '' }}
+//             onSubmit={handleLogin}
+//           >
+//             {({ handleChange, handleBlur, handleSubmit, values }) => (
+//               <View style={{ width: '100%' }}>
+//                 <TextInput
+//                   label="Correo Electrónico"
+//                   mode="outlined"
+//                   theme={{ colors: { text: 'black', primary: 'red' } }}
+//                   onChangeText={handleChange('correo')}
+//                   onBlur={handleBlur('correo')}
+//                   value={values.correo}
+//                   style={styles.input}
+//                   underlineColor="black"
+//                 />
+//                 <TextInput
+//                   label="Contraseña"
+//                   mode="outlined"
+//                   onChangeText={handleChange('contra')}
+//                   onBlur={handleBlur('contra')}
+//                   theme={{ colors: { text: 'white', primary: 'red' } }}
+//                   value={values.contra}
+//                   style={styles.input}
+//                   secureTextEntry
+//                 />
+//                 <Button mode="contained" onPress={handleSubmit} style={{ backgroundColor: 'red', width: '50%', alignSelf: 'center', marginTop: 8 }}>
+//                   <Text style={{ color: 'white', fontWeight: 'bold' }}>Entrar</Text>
+//                 </Button>
+//               </View>
+//             )}
+//           </Formik>
+//         </View>
+//       </ScrollView>
+//     </PaperProvider>
+//   );
+// };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-});
+// const styles = StyleSheet.create({
+//   allContainer: {
+//     flex: 1,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+//   backgroundImage: {
+//     flex: 1,
+//     position: 'absolute',
+//     width: '100%',
+//     height: '100%',
+//     resizeMode: 'cover',
+//   },
+//   formContainer: {
+//     alignItems: 'center',
+//     width: '80%',
+//     padding: 30,
+//     borderRadius: 5,
+//     backgroundColor: 'white',
+//     borderRadius: 10,
+//     paddingVertical: 35,
+//     borderWidth: 3,
+//   },
+//   image: {
+//     aspectRatio: 1,
+//     height: 100,
+//     marginBottom: 20,
+//     borderWidth: 6,
+//     borderColor: 'red',
+//     borderRadius: 70
+//   },
+//   input: {
+//     width: '100%',
+//     marginBottom: 15,
+//     backgroundColor: 'white',
+//   },
+// });
+
+// export default LoginScreen;
