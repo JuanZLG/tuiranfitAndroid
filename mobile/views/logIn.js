@@ -1,15 +1,21 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Platform } from 'react-native';  
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Button, Provider as PaperProvider, DefaultTheme, TextInput } from 'react-native-paper';
+import {
+  Button,
+  Provider as PaperProvider,
+  DefaultTheme,
+  TextInput,
+} from 'react-native-paper';
 import { Formik } from 'formik';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAvoidingView } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState(null); 
 
   const theme = {
     ...DefaultTheme,
@@ -20,12 +26,42 @@ const LoginScreen = () => {
     },
   };
 
+  const validate = async (values) => {
+    const errors = {};
+  
+    if (!values.correo) {
+      errors.correo = 'Campo obligatorio';
+    } else {
+      const usersResponse = await axios.get('http://localhost:5000/users');
+      const existingUser = usersResponse.data.find(
+        (user) => user.correo === values.correo
+      );
+  
+      if (!existingUser) {
+        errors.correo = 'El correo no existe en el sistema';
+      } else if (existingUser.estado === 0) {
+        errors.correo = 'El usuario está desactivado. Contacte al administrador.';
+      } else if (!values.contra) {
+        errors.contra = 'Campo obligatorio';
+      }
+    }
+  
+    return errors;
+  };
+
   const handleLogin = async (values) => {
     try {
+      if (!values.correo || !values.contra) {
+        Alert.alert('Error', 'Por favor, complete todos los campos.');
+        return;
+      }
+
+      setLoading(true);
+
       const response = await axios.post('http://localhost:5000/login', values, {
         headers: {
           'Content-Type': 'application/json',
-          'Platform': Platform.OS,  
+          Platform: Platform.OS,
         },
       });
 
@@ -40,6 +76,14 @@ const LoginScreen = () => {
       console.log('Inicio de sesión exitoso');
     } catch (error) {
       console.error('Error al iniciar sesión:', error.message);
+
+      if (error.response && error.response.status === 401) {
+        setLoginError('Contraseña incorrecta. Por favor, inténtalo de nuevo.');
+      } else {
+        setLoginError('Error al iniciar sesión. Por favor, inténtalo de nuevo.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,32 +107,59 @@ const LoginScreen = () => {
           <Formik
             initialValues={{ correo: '', contra: '' }}
             onSubmit={handleLogin}
+            validate={validate}
           >
-            {({ handleChange, handleBlur, handleSubmit, values }) => (
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+            }) => (
               <View style={{ width: '100%' }}>
                 <TextInput
                   label="Correo Electrónico"
                   mode="outlined"
-                  theme={{ colors: { text: 'black', primary: 'red' } }}
+                  theme={{ colors: { text: 'black', primary: 'black' } }}
                   onChangeText={handleChange('correo')}
                   onBlur={handleBlur('correo')}
                   value={values.correo}
                   style={styles.input}
                   underlineColor="black"
                 />
+                 {touched.correo && errors.correo && (
+                <Text style={{ color: 'red' }}>{errors.correo}</Text>
+              )}
                 <TextInput
                   label="Contraseña"
                   mode="outlined"
                   onChangeText={handleChange('contra')}
                   onBlur={handleBlur('contra')}
-                  theme={{ colors: { text: 'white', primary: 'red' } }}
+                  theme={{ colors: { text: 'white', primary: 'black' } }}
                   value={values.contra}
                   style={styles.input}
                   secureTextEntry
                 />
+                {touched.contra && (errors.contra || loginError) && (
+                <Text style={{ color: 'red' }}>{errors.contra || loginError}</Text>
+              )}
 
-                <Button mode="contained" onPress={handleSubmit} style={{ backgroundColor: 'red', width: '50%', alignSelf: 'center', marginTop: 8 }}>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Entrar</Text>
+                <Button
+                  mode="contained"
+                  onPress={handleSubmit}
+                  style={{
+                    backgroundColor: 'red',
+                    width: '50%',
+                    alignSelf:'center',
+                    marginTop: 18,
+                  }}
+                  loading={loading}
+                  disabled={loading}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                    Entrar
+                  </Text>
                 </Button>
               </View>
             )}
@@ -98,6 +169,7 @@ const LoginScreen = () => {
     </PaperProvider>
   );
 };
+
 
 const styles = StyleSheet.create({
   allContainer: {
@@ -128,11 +200,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 6,
     borderColor: 'red',
-    borderRadius: 70
+    borderRadius: 70,
   },
   input: {
     width: '100%',
-    marginBottom: 15,
+    marginBottom: 1,
+    marginTop:15,
     backgroundColor: 'white',
   },
 });

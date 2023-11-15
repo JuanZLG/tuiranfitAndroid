@@ -1,16 +1,16 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');  // Cambiado a mysql2
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
 const port = 5000;
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'juannn',
-  database: 'tuiranfitxx',
+  password: 'monitoc10',
+  database: 'ranfit',
 });
 
 app.use(cors());
@@ -27,7 +27,6 @@ app.get('/productos', (req, res) => {
     }
   });
 });
-
 
 app.get('/users', (req, res) => {
   const query = 'SELECT * FROM usuarios';
@@ -48,7 +47,7 @@ app.post('/login', (req, res) => {
   const { correo, contra } = req.body;
 
   const query = 'SELECT * FROM usuarios WHERE correo = ? AND contrasena = ?';
-  db.query(query, [correo, contra], (err, results) => {
+  db.execute(query, [correo, contra], (err, results) => {  // Cambiado a db.execute
     if (err) {
       console.error('Error en la consulta de inicio de sesión:', err);
       return res.status(500).send('Error al consultar la base de datos.');
@@ -59,7 +58,7 @@ app.post('/login', (req, res) => {
     }
 
     const usuario = { correo, contra };
-    const token = jwt.sign(usuario, 'tu_secreto'); 
+    const token = jwt.sign(usuario, 'tu_secreto');
     res.json({ token });
   });
 });
