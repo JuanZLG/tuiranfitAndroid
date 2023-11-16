@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Modal, Pressable, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Modal,
+  Pressable,
+  TextInput,
+} from 'react-native';
 import Navbar from './navbarrr';
-import Sidebar from './sidebarrr';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const HomeScreen = ({ navigation }) => {
@@ -25,16 +34,6 @@ const HomeScreen = ({ navigation }) => {
     fetchProductos();
   }, []);
 
-  const arrayBufferToBase64 = (buffer) => {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  };
-
   const handleLogout = () => {
     setModalVisible(!modalVisible);
     navigation.navigate('Login');
@@ -52,6 +51,25 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const bufferToBase64 = (buffer) => {
+    const binary = Array.from(new Uint8Array(buffer)).map((byte) => String.fromCharCode(byte)).join('');
+    const base64Image = 'data:image/png;base64,' + btoa(binary);
+    console.log('URL de la imagen:', base64Image);
+    return base64Image;
+  };
+  
+  
+  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -67,44 +85,39 @@ const HomeScreen = ({ navigation }) => {
             onChangeText={handleSearch}
           />
         </View>
-        <TouchableOpacity
-          onPress={() => setModalVisible(true)}
-          style={styles.iconContainer}
-        >
-          <Icon name="ellipsis-v" size={18} color="white" style={styles.icon} />
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.iconContainer}>
+          <Icon name="sign-out" size={18} color="white" style={styles.icon} />
         </TouchableOpacity>
       </View>
       <View style={styles.contentContainer}>
-        <View style={styles.sidebar}>
-          <Sidebar />
+      <FlatList
+  data={productos}
+  keyExtractor={(item) => item.id_producto.toString()}
+  renderItem={({ item }) => {
+    console.log('URL de la imagen:', bufferToBase64(item.iProductImg.data));
+    return (
+      <TouchableOpacity style={styles.card}>
+        <View style={styles.cardContent}>
+          {item.iProductImg ? (
+            <Image
+              source={{ uri: bufferToBase64(item.iProductImg.data) }}
+              style={styles.image}
+            />
+          ) : (
+            <Text>Imagen no disponible</Text>
+          )}
+          <Text style={styles.productName}>{item.nombre_producto}</Text>
+          <Text style={styles.price}>Precio: {formatCurrency(item.precio)}</Text>
+          <Text style={styles.stock}>Cantidad: {item.cantidad}</Text>
+          <Text style={styles.expiryDate}>
+            Vencimiento: {new Date(item.fechaven).toLocaleDateString()}
+          </Text>
         </View>
-        <View style={styles.cardsContainer}>
-          <FlatList
-            data={productos}
-            keyExtractor={(item) => item.id_producto.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.card}>
-                <View style={styles.cardContent}>
-                  {item.iProductImg ? (
-                    <Image
-                      source={{ uri: `data:image/png;base64,${arrayBufferToBase64(item.iProductImg)}` }}
-                      style={styles.image}
-                    />
-                  ) : (
-                    <Text>Imagen no disponible</Text>
-                  )}
-                  <Text style={styles.productName}>{item.nombre_producto}</Text>
-                  <Text style={styles.description}>{item.descripcion}</Text>
-                  <Text style={styles.price}>Precio: ${item.precio}</Text>
-                  <Text style={styles.stock}>Cantidad: {item.cantidad}</Text>
-                  <Text style={styles.expiryDate}>
-                    Vencimiento: {new Date(item.fechaven).toLocaleDateString()}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
+      </TouchableOpacity>
+    );
+  }}
+/>
+
       </View>
 
       <Modal
@@ -119,10 +132,7 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.modalView}>
             <Text style={styles.modalText}>¿Deseas cerrar sesión?</Text>
             <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.button, styles.buttonConfirm]}
-                onPress={handleLogout}
-              >
+              <Pressable style={[styles.button, styles.buttonConfirm]} onPress={handleLogout}>
                 <Text style={styles.textStyle}>Aceptar</Text>
               </Pressable>
               <Pressable
@@ -155,12 +165,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 20,
-    paddingVertical: 5,
+    borderRadius: 10,
+    paddingVertical: 10,
     paddingHorizontal: 10,
-    marginRight: 10,
-    width: 150, 
-    height: 30
+    marginHorizontal: 10,
+    width: 150,
+    height: 30,
   },
   searchIconContainer: {
     marginRight: 5,
@@ -175,9 +185,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     borderWidth: 0,
     padding: 0,
-    outlineWidth: 0, 
+    outlineWidth: 0,
   },
-  
   iconContainer: {
     padding: 10,
   },
@@ -186,23 +195,15 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    flexDirection: 'row',
-  },
-  sidebar: {
-    width: 150,
-    backgroundColor: '#333',
-  },
-  cardsContainer: {
-    flex: 1,
-    margin: 16,
+    margin: 10,
   },
   card: {
     backgroundColor: '#f9f9f9',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: 'red',
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 120,
+    height: 100,
     borderRadius: 8,
     marginBottom: 8,
   },
@@ -226,10 +227,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     fontWeight: 'bold',
-  },
-  description: {
-    fontSize: 14,
-    marginBottom: 8,
   },
   price: {
     fontSize: 14,
