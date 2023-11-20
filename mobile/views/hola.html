@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos</title>
+</head>
+<body>
+
+    <h1>Lista de Productos</h1>
+
+    <ul id="productos-lista"></ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Hacer la solicitud a la API
+            fetch("http://localhost:5000/productos")
+                .then(response => response.json())
+                .then(data => {
+                    // Procesar la respuesta y agregar los productos a la lista
+                    const productosLista = document.getElementById("productos-lista");
+
+                    data.forEach(producto => {
+                        const listItem = document.createElement("li");
+                        listItem.innerHTML = `
+                            <strong>ID Producto:</strong> ${producto.id_producto} <br>
+                            <strong>Categoría:</strong> ${producto.id_categoria} <br>
+                            <strong>Marca:</strong> ${producto.id_marca} <br>
+                            <strong>Nombre:</strong> ${producto.nombre_producto} <br>
+                            <strong>Descripción:</strong> ${producto.descripcion} <br>
+                            <strong>Cantidad:</strong> ${producto.cantidad} <br>
+                            <strong>Fecha de Vencimiento:</strong> ${producto.fechaven} <br>
+                            <strong>Sabor:</strong> ${producto.sabor} <br>
+                            <strong>Presentación:</strong> ${producto.presentacion} <br>
+                            <strong>Precio:</strong> ${producto.precio} <br>
+                            <strong>Estado:</strong> ${producto.estado} <br>
+                            <strong>Imagen de Producto:</strong> ${decodeBuffer(producto.iProductImg.data)} <br>
+                            <strong>Imagen de Información:</strong> http://127.0.0.1:8000/media/${decodeBuffer(producto.iInfoImg.data)} <br>
+                            <strong>Precio Publicado:</strong> ${producto.precio_pub} <br>
+                            <hr>
+                        `;
+                        productosLista.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error("Error al obtener la lista de productos:", error));
+        });
+
+        function decodeBuffer(buffer) {
+            return new TextDecoder('utf-8').decode(new Uint8Array(buffer));
+        }
+    </script>
+
+</body>
+</html>

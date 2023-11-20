@@ -60,15 +60,9 @@ const HomeScreen = ({ navigation }) => {
     }).format(value);
   };
 
-  const bufferToBase64 = (buffer) => {
-    const binary = Array.from(new Uint8Array(buffer)).map((byte) => String.fromCharCode(byte)).join('');
-    const base64Image = 'data:image/png;base64,' + btoa(binary);
-    console.log('URL de la imagen:', base64Image);
-    return base64Image;
-  };
-  
-  
-  
+  function decodeBuffer(buffer) {
+    return new TextDecoder('utf-8').decode(new Uint8Array(buffer));
+  }
 
   return (
     <View style={styles.container}>
@@ -90,34 +84,32 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.contentContainer}>
-      <FlatList
-  data={productos}
-  keyExtractor={(item) => item.id_producto.toString()}
-  renderItem={({ item }) => {
-    console.log('URL de la imagen:', bufferToBase64(item.iProductImg.data));
-    return (
-      <TouchableOpacity style={styles.card}>
-        <View style={styles.cardContent}>
-          {item.iProductImg ? (
-            <Image
-              source={{ uri: bufferToBase64(item.iProductImg.data) }}
-              style={styles.image}
-            />
-          ) : (
-            <Text>Imagen no disponible</Text>
+        <FlatList
+          data={productos}
+          keyExtractor={(item) => item.id_producto.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.card}>
+              <View style={styles.cardContent}>
+                {item.iProductImg ? (
+                  <Image
+                    source={{ uri: `http://127.0.0.1:8000/media/${decodeBuffer(item.iProductImg.data)}` }}
+                    style={styles.image}
+                  />
+                ) : (
+                  <Text>Imagen no disponible</Text>
+                )}
+                <View style={styles.productDetails}>
+                  <Text style={styles.productName}>{item.nombre_producto}</Text>
+                  <Text style={styles.price}>Precio: {formatCurrency(item.precio)}</Text>
+                  <Text style={styles.stock}>Cantidad: {item.cantidad}</Text>
+                </View>
+              </View>
+              <Text style={styles.expiryDate}>
+                Vencimiento: {new Date(item.fechaven).toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
           )}
-          <Text style={styles.productName}>{item.nombre_producto}</Text>
-          <Text style={styles.price}>Precio: {formatCurrency(item.precio)}</Text>
-          <Text style={styles.stock}>Cantidad: {item.cantidad}</Text>
-          <Text style={styles.expiryDate}>
-            Vencimiento: {new Date(item.fechaven).toLocaleDateString()}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }}
-/>
-
+        />
       </View>
 
       <Modal
@@ -213,15 +205,18 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  image: {
-    width: '100%',
-    height: 100,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
   cardContent: {
+    flexDirection: 'row',
+  },
+  image: {
+    width: 150,
+    height: 150,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  productDetails: {
     flex: 1,
-    flexDirection: 'column',
+    marginLeft: 8,
   },
   productName: {
     fontSize: 16,
@@ -231,16 +226,17 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 14,
     marginBottom: 8,
-    fontWeight: 'bold',
+    
   },
   expiryDate: {
     fontSize: 14,
     marginBottom: 8,
     color: 'red',
+    alignSelf: 'flex-end',
   },
   stock: {
     fontSize: 14,
-    fontWeight: 'bold',
+    
   },
   centeredView: {
     flex: 1,
