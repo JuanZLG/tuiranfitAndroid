@@ -88,7 +88,12 @@ const HomeScreen = ({ navigation }) => {
           data={productos}
           keyExtractor={(item) => item.id_producto.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card}
+            onPress={() => navigation.navigate('ProductDetail', { product: item })}
+
+            
+            >
+
               <View style={styles.cardContent}>
                 {item.iProductImg ? (
                   <Image
