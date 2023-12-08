@@ -96,17 +96,20 @@ const HomeScreen = ({ navigation }) => {
                     style={styles.image}
                   />
                 ) : (
-                  <Text>Imagen no disponible</Text>
+                  <Text>Imagen no Disponible</Text>
                 )}
                 <View style={styles.productDetails}>
                   <Text style={styles.productName}>{item.nombre_producto}</Text>
-                  <Text style={styles.price}>Precio: {formatCurrency(item.precio)}</Text>
-                  <Text style={styles.stock}>Cantidad: {item.cantidad}</Text>
+                  <View style={{height:8}}></View>
+                  <Text style={styles.stock}>Categoría: {item.id_categoria}</Text>
+                  <Text style={styles.stock}>Marca: {item.id_marca}</Text>
+                  <Text style={styles.stock}>Sabores: {item.sabor}</Text>
+                  <Text style={styles.stock}>Presentaciones: {item.presentacion}<Text> lb(s)</Text></Text>
+                  <View style={{height:15}}></View>
+                  <View style={{alignSelf:'right', marginRight:8, marginLeft:60}}><Text style={styles.price}>{formatCurrency(item.precio_pub)}</Text></View>
                 </View>
               </View>
-              <Text style={styles.expiryDate}>
-                Vencimiento: {new Date(item.fechaven).toLocaleDateString()}
-              </Text>
+              
             </TouchableOpacity>
           )}
         />
@@ -190,9 +193,9 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   card: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'white',
     borderRadius: 10,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: 'red',
     padding: 12,
     marginBottom: 12,
@@ -213,20 +216,22 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 8,
     marginRight: 8,
+    
   },
   productDetails: {
     flex: 1,
     marginLeft: 8,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 20,
     marginBottom: 8,
     fontWeight: 'bold',
+    color:'red'
   },
   price: {
-    fontSize: 14,
-    marginBottom: 8,
-    
+    fontSize: 21,
+    textAlign:'center',
+    fontWeight:'bold',
   },
   expiryDate: {
     fontSize: 14,

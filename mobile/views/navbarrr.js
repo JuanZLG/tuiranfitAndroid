@@ -10,7 +10,7 @@ const Navbar = () => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.navbarText}>Tuiranfit</Text>
+        <Text style={styles.navbarText}>TuiranFit</Text>
       </View>
     </View>
   );
