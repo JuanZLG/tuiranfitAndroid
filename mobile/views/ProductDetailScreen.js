@@ -12,18 +12,19 @@ const ProductDetailScreen = ({ route, navigation }) => {
     return new TextDecoder('utf-8').decode(new Uint8Array(buffer));
   };
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const marcaResponse = await fetch(`http://127.0.0.1:5000/marcas?id=${product.id_marca}`);
         const marcaData = await marcaResponse.json();
-        setMarca(Array.isArray(marcaData) ? marcaData : [marcaData]);
+        const marcaProducto = marcaData.find(marca => marca.id_marca === product.id_marca);
+        setMarca(marcaProducto ? [marcaProducto] : []);
   
         const categoriaResponse = await fetch(`http://127.0.0.1:5000/categorias?id=${product.id_categoria}`);
         const categoriaData = await categoriaResponse.json();
-        setCategoria(Array.isArray(categoriaData) ? categoriaData : [categoriaData]);
+        const categoriaProducto = categoriaData.find(categoria => categoria.id_categoria === product.id_categoria);
+        setCategoria(categoriaProducto ? [categoriaProducto] : []);
   
-        
       } catch (error) {
         console.error('Error al obtener la información:', error);
       }
@@ -31,6 +32,7 @@ useEffect(() => {
   
     fetchData();
   }, [product.id_marca, product.id_categoria]);
+  
   
   
   
