@@ -22,9 +22,9 @@ const ProductDetailScreen = ({ route, navigation }) => {
   
         const categoriaResponse = await fetch(`http://127.0.0.1:5000/categorias?id=${product.id_categoria}`);
         const categoriaData = await categoriaResponse.json();
-        const categoriaProducto = categoriaData.find(categoria => categoria.id_categoria === product.id_categoria);
-        setCategoria(categoriaProducto ? [categoriaProducto] : []);
+        setCategoria(Array.isArray(categoriaData) ? categoriaData : [categoriaData]);
   
+        
       } catch (error) {
         console.error('Error al obtener la información:', error);
       }
