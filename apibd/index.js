@@ -9,8 +9,8 @@ const port = 5000;
 const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'juannn',
-  database: 'tuiranfitxx',
+  password: 'monitoc10',
+  database: 'ranfit'
 });
 
 app.use(cors());

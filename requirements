@@ -7,7 +7,7 @@ En API:
 
 express
 cors
-mysql
+mysql2
 body-parser
 
 En mobile: 

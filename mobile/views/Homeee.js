@@ -9,25 +9,45 @@ import {
   Modal,
   Pressable,
   TextInput,
+  ActivityIndicator
 } from 'react-native';
 import Navbar from './navbarrr';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import unorm from 'unorm';
 
 const HomeScreen = ({ navigation }) => {
   const [productos, setProductos] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [mostrarResultados, setMostrarResultados] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProductos = () => {
-    fetch('http://localhost:5000/productos')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Datos de productos:', data);
-        setProductos(data);
-      })
-      .catch((error) => {
-        console.error('Error al obtener productos:', error);
-      });
+  const fetchProductos = async () => {
+    try {
+      const productosResponse = await fetch('http://localhost:5000/productos');
+      const productosData = await productosResponse.json();
+
+      for (const product of productosData) {
+  
+        const categoriaResponse = await fetch(`http://localhost:5000/categorias?id=${product.id_categoria}`);
+        const categoriaData = await categoriaResponse.json();
+        const categoriaProducto = categoriaData.find(categoria => categoria.id_categoria === product.id_categoria);
+        
+
+        const marcaResponse = await fetch(`http://localhost:5000/marcas?id=${product.id_marca}`);
+        const marcaData = await marcaResponse.json();
+        const marcaProducto = marcaData.find(marca => marca.id_marca === product.id_marca);
+        
+        product.categoria = categoriaProducto;
+        product.marca = marcaProducto;
+      }
+
+      setProductos(productosData);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener la información:', error);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -41,13 +61,33 @@ const HomeScreen = ({ navigation }) => {
 
   const handleSearch = (text) => {
     setSearchText(text);
+    setMostrarResultados(true);
     if (text === '') {
       fetchProductos();
     } else {
-      const filteredProducts = productos.filter((product) =>
-        product.nombre_producto.toLowerCase().includes(text.toLowerCase())
-      );
-      setProductos(filteredProducts);
+      const normalizedText = unorm.nfc(text.toLowerCase());
+  
+      const filteredProducts = productos.filter((product) => {
+        const nombreProducto = unorm.nfc(product.nombre_producto.toLowerCase());
+        const marcaProducto = unorm.nfc(product.marca?.nombre_marca.toLowerCase()) || '';
+        const categoriaProducto = unorm.nfc(product.categoria?.nombre_categoria.toLowerCase()) || '';
+  
+        return (
+          nombreProducto.includes(normalizedText) ||
+          marcaProducto.includes(normalizedText) ||
+          categoriaProducto.includes(normalizedText)
+        );
+      });
+  
+      if (filteredProducts.length === 0) {
+   
+        setProductos([]);
+        setMostrarResultados(false);
+      } else {
+  
+        setProductos(filteredProducts);
+        setMostrarResultados(true);
+      }
     }
   };
 
@@ -84,16 +124,17 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.contentContainer}>
+        
+      {isLoading ? ( // Verifica si se están cargando los datos
+          <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 180 }} />
+        ) : mostrarResultados ? (
         <FlatList
           data={productos}
           keyExtractor={(item) => item.id_producto.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.card}
             onPress={() => navigation.navigate('ProductDetail', { product: item })}
-
-            
             >
-
               <View style={styles.cardContent}>
                 {item.iProductImg ? (
                   <Image
@@ -105,12 +146,12 @@ const HomeScreen = ({ navigation }) => {
                 )}
                 <View style={styles.productDetails}>
                   <Text style={styles.productName}>{item.nombre_producto}</Text>
-                  <View style={{height:8}}></View>
-                  <Text style={styles.stock}>Categoría: {item.id_categoria}</Text>
-                  <Text style={styles.stock}>Marca: {item.id_marca}</Text>
-                  <Text style={styles.stock}>Sabores: {item.sabor}</Text>
-                  <Text style={styles.stock}>Presentaciones: {item.presentacion}<Text> lb(s)</Text></Text>
-                  <View style={{height:15}}></View>
+                  <View style={{height:7}}></View>
+                  <Text><Text style={styles.stock}>Categoría: </Text><Text>{item.categoria?.nombre_categoria}</Text></Text>
+                  <Text><Text style={styles.stock}>Marca: </Text><Text>{item.marca?.nombre_marca}</Text></Text>
+                  <Text><Text style={styles.stock}>Sabores: </Text><Text>{item.sabor}</Text></Text>
+                  <Text><Text style={styles.stock}>Presentación: </Text><Text style={{color:'red', fontWeight:'bold'}}>{item.presentacion}</Text><Text style={{color:'red', fontWeight:'bold'}}> lb(s)</Text></Text>
+                  <View style={{height:10}}></View>
                   <View style={{alignSelf:'right', marginRight:8, marginLeft:60}}><Text style={styles.price}>{formatCurrency(item.precio_pub)}</Text></View>
                 </View>
               </View>
@@ -118,6 +159,13 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         />
+      ):(
+        <View style={{ justifyContent: 'center', alignItems: 'center', height:'auto', marginTop:180}}>
+  <Image source={require('../assets/img/sadgorille.png')} style={{ width: 200, height: 200 }} />
+  <Text style={{ textAlign: 'center', fontSize:20}}>No se encontraron resultados</Text>
+</View>
+
+      )}
       </View>
 
       <Modal
@@ -221,7 +269,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 8,
     marginRight: 8,
-    
+    marginTop:10,
   },
   productDetails: {
     flex: 1,
@@ -238,15 +286,9 @@ const styles = StyleSheet.create({
     textAlign:'center',
     fontWeight:'bold',
   },
-  expiryDate: {
-    fontSize: 14,
-    marginBottom: 8,
-    color: 'red',
-    alignSelf: 'flex-end',
-  },
   stock: {
-    fontSize: 14,
-    
+    fontSize: 16,
+    fontWeight:'bold'
   },
   centeredView: {
     flex: 1,
